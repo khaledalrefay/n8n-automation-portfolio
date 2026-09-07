@@ -45,13 +45,12 @@ OpenRouter · Google Forms · Google Sheets
 .
 ├── smart-retail-assistant/
 │   ├── README.md          project write-up and architecture
-│   ├── workflow.json      sanitized n8n export
+│   ├── workflow.json      
 │   └── screenshots/
 ├── ai-course-manager/
 │   ├── README.md
 │   ├── workflow.json
 │   └── screenshots/
-└── scrub_n8n.py           sanitizer used before publishing any export
 ```
 
 ## Running a workflow
