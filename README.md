@@ -62,25 +62,6 @@ OpenRouter · Google Forms · Google Sheets
    `REDACTED` placeholder with your own values.
 4. Recreate the Google Sheets tabs described in each project's README.
 
-## A note on secrets
-
-n8n exports embed more than people expect: credential ids and names, webhook
-ids, instance ids, pinned test data, document ids, and any key typed directly
-into an HTTP node rather than stored as a credential.
-
-`scrub_n8n.py` strips those before publishing:
-
-```bash
-python scrub_n8n.py workflow.json -o clean.json --redact <chat-id> --redact <host>
-```
-
-The `--redact` flag exists for a reason worth stating: a regex cannot tell a
-Telegram chat id from a duration in milliseconds. Both are just long integers.
-Automatic heuristics either miss real identifiers or corrupt working logic, so
-identifiers get named explicitly and the script leaves expression internals
-alone.
-
-**Read the sanitized file before you push it.** No script catches everything.
 
 ## License
 
