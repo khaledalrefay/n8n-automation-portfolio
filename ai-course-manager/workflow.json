@@ -1,0 +1,1412 @@
+{
+  "name": "Course Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "AI_Course_Manager_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 389050415,
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=YOUR_CHAT_ID"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=رقم الواتساب",
+              "lookupValue": "={{ $('استخراج وتنظيف البيانات').item.json.phone }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -16,
+        512
+      ],
+      "id": "fa5c37f9-89ba-4cd3-9d95-476fe87d3ccc",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9ebb69c8-5703-4e57-8356-78b4950e6ce6",
+              "leftValue": "={{ $json['رقم الواتساب'] }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "={{ true }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        512
+      ],
+      "id": "24ef2283-9965-4474-8906-79a32dedc565",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        576,
+        432
+      ],
+      "id": "ca356a3c-fdac-427c-91d4-22e939d4b802",
+      "name": "OpenRouter Chat Model"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('استخراج وتنظيف البيانات').item.json.phone }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        672,
+        432
+      ],
+      "id": "22c2f296-d464-4474-b145-45eda08fe4d8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "AI_Course_Manager_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 389050415,
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=YOUR_CHAT_ID"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        272
+      ],
+      "id": "a4d094e1-338d-4f67-b59c-487204d038f1",
+      "name": "تسجيل جديد"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED/message/sendText/WhatsApp-N8N",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_API_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json['رقم الواتساب'] }}\",\n  \"text\": \"👋 مرحبًا {{ $json['الاسم'] }}، أهلًا وسهلًا بك!\\n\\nتم تسجيل بياناتك بنجاح ✅\\nوهذه هي المعلومات المسجلة لدينا:\\n\\n👤 الاسم: {{ $json['الاسم'] }}\\n📱 رقم الواتساب: {{ $json['رقم الواتساب'] }}\\n📧 البريد الإلكتروني:\\n {{ $json['البريد الإلكتروني '] }}\\n\\n*🤖 أنا مساعدك الذكي خلال فترة التدريب، ويمكنك مراسلتي بأي استفسار حول التدريب أو محتوى الكورس وسأكون سعيدًا بمساعدتك*.\\n\\nنتمنى لك تجربة تدريبية ممتعة ومفيدة 🚀🌟\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -464,
+        272
+      ],
+      "id": "2816f4f7-9bea-42bd-a1e7-5d38739be7d4",
+      "name": "رسالة الترحيب",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "AI_Course_Manager_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 389050415,
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=YOUR_CHAT_ID"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "الاسم": "={{ $('تسجيل جديد').item.json['الاسم'] }}",
+            "حالة الدفع": "لم يدفع",
+            "رقم الواتساب": "={{ $('تسجيل جديد').item.json['رقم الواتساب'] }}"
+          },
+          "matchingColumns": [
+            "رقم الواتساب"
+          ],
+          "schema": [
+            {
+              "id": "طابع زمني",
+              "displayName": "طابع زمني",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "الاسم",
+              "displayName": "الاسم",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "رقم الواتساب",
+              "displayName": "رقم الواتساب",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "البريد الإلكتروني ",
+              "displayName": "البريد الإلكتروني ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "هل لديك خبرة سابقة في البرمجة أو الذكاء الاصطناعي؟",
+              "displayName": "هل لديك خبرة سابقة في البرمجة أو الذكاء الاصطناعي؟",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ما هدفك من حضور هذه الدورة ؟",
+              "displayName": "ما هدفك من حضور هذه الدورة ؟",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "هل تملك حاسوباً بمواصفات جيدة ؟",
+              "displayName": "هل تملك حاسوباً بمواصفات جيدة ؟",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "حالة الدفع",
+              "displayName": "حالة الدفع",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "آخر تذكير",
+              "displayName": "آخر تذكير",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "عدد مرات التذكير",
+              "displayName": "عدد مرات التذكير",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -240,
+        272
+      ],
+      "id": "393459e2-1250-4c0f-bb97-9d7388212476",
+      "name": "تهيئة حالة الدفع"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        512
+      ],
+      "id": "2de51af9-6750-4729-8421-eb1bb2fe7ee3",
+      "name": "استقبال رسالة واتساب"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54937fc8-a053-43f2-93c4-0b88eff7b9ed",
+              "name": "phone",
+              "value": "={{ $json.body.data.key.remoteJid.split('@')[0].replace(/\\D/g,'') }}",
+              "type": "string"
+            },
+            {
+              "id": "a5158733-cf4c-46c1-bce8-a11f5347d83c",
+              "name": "text",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            },
+            {
+              "id": "77105e93-af4f-4f21-a066-e962e6193b00",
+              "name": "fromMe",
+              "value": "={{ $json.body.data.key.fromMe }}",
+              "type": "boolean"
+            },
+            {
+              "id": "7911e760-0580-40cf-ad35-7856ce21eb67",
+              "name": "pushName",
+              "value": "={{ $json.body.data.pushName }}",
+              "type": "string"
+            },
+            {
+              "id": "42fdb2ca-a4ca-4a0b-a58a-230ef7d1618e",
+              "name": "isPrivate",
+              "value": "={{ $json.body.data.key.remoteJid.includes('@s.whatsapp.net') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -464,
+        512
+      ],
+      "id": "cc44c274-102c-4097-a725-40cb4d526938",
+      "name": "استخراج وتنظيف البيانات"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5bb7e180-7e5f-41ef-8c6e-6703b6f7c467",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "cdc2e410-961e-4948-972c-89414cb7d103",
+              "leftValue": "={{ $json.fromMe }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ad718282-f125-4c81-828d-2e2a06494a41",
+              "leftValue": "={{ $json.isPrivate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        512
+      ],
+      "id": "eb6bf477-32f7-45a4-a072-a4be20ce4573",
+      "name": "تحقق من أن الرسالة من طالب"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED/message/sendText/WhatsApp-N8N",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_API_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('استخراج وتنظيف البيانات').item.json.phone }}"
+            },
+            {
+              "name": "text",
+              "value": "=أهلاً {{ $('استخراج وتنظيف البيانات').item.json.pushName }} 👋  لم أجد رقمك بين المسجّلين في الكورس.  يمكنك التسجيل من هنا: https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?usp=header  بعد إتمام التسجيل راسلني مجدداً وسأكون بانتظارك 🙏"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        528
+      ],
+      "id": "f7360b74-26bc-4a98-b5fa-4d0e41513c1b",
+      "name": "رد: غير مسجّل",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED/message/sendText/WhatsApp-N8N",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_API_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('استخراج وتنظيف البيانات').item.json.phone }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        256
+      ],
+      "id": "094565d5-484c-4505-975c-038b73f57fd3",
+      "name": "إرسال رد المساعد",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('استخراج وتنظيف البيانات').item.json.text }}",
+        "options": {
+          "systemMessage": "=أنت \"مساعد الكورس\"، مساعد ذكي عبر واتساب لكورس:\n\"الأتمتة والذكاء الاصطناعي العملي باستخدام n8n\".\n\nدورك مزدوج:\n1. مساعدة المهتمين والمسجلين الذين لم يكملوا الدفع على فهم قيمة الكورس واتخاذ قرار التسجيل وتثبيت مقعدهم.\n2. دعم الطلاب المسجلين والإجابة عن جميع استفساراتهم المتعلقة بالكورس، المحتوى، المواعيد، الحضور، المشاريع والمتطلبات.\n\nهدفك أن تكون مقنعاً ومفيداً، لا بائعاً ملحّاً.\n\n════════════════════════════\nبيانات الطالب الحالي\n════════════════════════════\n\nالاسم: {{ $json['الاسم'] }}\nحالة الدفع: {{ $json['حالة الدفع'] }}\nالخبرة التقنية: {{ $json['هل لديك خبرة سابقة في البرمجة أو الذكاء الاصطناعي؟'] }}\nالهدف من الدورة: {{ $json['ما هدفك من حضور هذه الدورة ؟'] }}\nيملك حاسوباً مناسباً: {{ $json['هل تملك حاسوباً بمواصفات جيدة ؟'] }}\n\nاستخدم هذه البيانات داخلياً لتخصيص ردك، ولا تقل للطالب إنك تقرأ بياناته أو تعرف معلومات عنه من النظام.\n\nحسب الخبرة:\n- بدون خبرة: استخدم لغة بسيطة جداً واشرح المصطلحات.\n- خبرة بسيطة: استخدم المصطلحات مع شرح مختصر.\n- خبرة جيدة: تحدث تقنياً بشكل مباشر.\n\nحسب الهدف:\n- تطوير مهني: ركز على المشاريع، Portfolio، سوق العمل وتقديم خدمات الأتمتة.\n- مشروع خاص: ركز على كيفية أتمتة العمليات وتوفير الوقت والجهد.\n- فضول معرفي: ركز على التعلم والتطبيق العملي.\n\n════════════════════════════\nالدور حسب حالة الدفع\n════════════════════════════\n\nإذا كانت حالة الدفع \"لم يدفع\":\nاعتبره طالباً مهتماً. أجب عن أسئلته وساعده على فهم قيمة الكورس. إذا ظهر تردد أو اعتراض، تعامل معه بشكل مقنع وهادئ ويمكنك تشجيعه على تثبيت مقعده.\n\nإذا كانت \"دفع جزئي\":\nاعتبره طالباً مسجلاً. قدم له الدعم الكامل، ويمكنك الإجابة عن الدفعة المتبقية إذا سأل عنها.\n\nإذا كانت \"تم الدفع\":\nتعامل معه كطالب مسجل بالكامل. ركز على الدعم والمحتوى والمواعيد والتطبيقات، ولا تحاول بيعه الكورس مرة أخرى.\n\n════════════════════════════\nأسلوب الرد\n════════════════════════════\n\n- اكتب بعربية بسيطة وقريبة من اللهجة الشامية البيضاء.\n- الرد الطبيعي من 2 إلى 4 جمل.\n- إذا طلب شرحاً تقنياً أو خطوات، يمكنك التفصيل أكثر.\n- استخدم إيموجي واحداً كحد أقصى عند الحاجة.\n- استخدم اسم الطالب أحياناً بشكل طبيعي.\n- ادخل في الجواب مباشرة.\n- لا تبدأ بـ \"بالطبع\" أو \"بكل سرور\" أو \"سؤال ممتاز\".\n- لا تكرر نفس الإجابة حرفياً إذا أعاد الطالب السؤال.\n- لا تضغط على الطالب أو تستخدم أسلوباً تسويقياً مبالغاً فيه.\n\n════════════════════════════\nالتعامل مع المواقف المهمة\n════════════════════════════\n\nإذا قال الطالب:\n\"شكراً\" أو ما يشابهها\n\nرد:\n\"عفواً، نحن متشوقون لرحلتك معنا 🙏\"\n\nيمكن تغيير الصياغة قليلاً أحياناً، لكن حافظ على نفس المعنى ولا تضف شرحاً أو معلومات جديدة.\n\nإذا قال:\n\"السعر مرتفع\" أو \"الكورس غالي\"\n\nلا تعرض خصماً مباشرة.\nتعاطف معه باختصار، ثم وضح القيمة التي يحصل عليها مقابل السعر:\n\n- 12 محاضرة مباشرة.\n- 24 ساعة تدريب مباشر.\n- مشاريع عملية حقيقية.\n- Workflows وقوالب جاهزة.\n- تسجيلات لمدة 6 أشهر.\n- دعم ومتابعة.\n- مشروع تخرج يمكن إضافته إلى Portfolio.\n- تعلم بناء أنظمة أتمتة وليس مجرد مشاهدة محتوى نظري.\n\nاختم بسؤال طبيعي مثل:\n\"إذا بتحب، بوضحلك كمان خيار التقسيط على دفعتين.\"\n\nركز على القيمة وليس على الضغط لإتمام الشراء.\n\nإذا قال:\n\"بقدر أتعلم هالشي مجاناً من يوتيوب\"\n\nوضح أن المحتوى المجاني مفيد، لكن قيمة الكورس في المسار المنظم، التدريب المباشر، المشاريع، تصحيح الأخطاء، القوالب، المتابعة والوصول لمشروع كامل بدل التنقل بين مصادر متفرقة.\n\nإذا قال:\n\"ما عندي خبرة برمجة\"\n\nطمئنه أن الكورس يبدأ من الصفر ولا يشترط أي خبرة برمجية.\n\nإذا قال:\n\"خايف ما أقدر أكمل\"\n\nوضح أن التدريب تدريجي، وكل أسبوع يحتوي على تطبيق أو مشروع صغير، مع تسجيلات ودعم عند التعثر.\n\nإذا سأل:\n\"هل رح ألاقي شغل بعد الكورس؟\"\n\nلا تعده بوظيفة أو دخل.\nوضح أن الكورس يعطيه مهارات عملية ومشاريع يمكن عرضها في Portfolio، ويشرح في الأسبوع السادس كيفية تقديم خدمات الأتمتة للعملاء والشركات.\n\nإذا كانت الرسالة شكوى أو غضب:\nلا تجادل ولا تدافع.\nاعتذر باختصار واعرض تحويل الموضوع للمشرف.\n\n════════════════════════════\nمعلومات الكورس\n════════════════════════════\n\nاسم الكورس:\nالأتمتة والذكاء الاصطناعي العملي باستخدام n8n\n\nنوع التدريب:\nOnline Live عبر Zoom.\n\nلغة الشرح:\nالعربية، مع استخدام المصطلحات التقنية بالإنجليزية.\n\nالمدة:\n6 أسابيع.\n\nعدد المحاضرات:\n12 محاضرة مباشرة.\n\nمدة المحاضرة:\nساعتان.\n\nإجمالي التدريب المباشر:\n24 ساعة.\n\nالمواعيد:\nالأحد والأربعاء\n7:00 – 9:00 مساءً بتوقيت دمشق.\n\nالتطبيق المنزلي المتوقع:\n2–4 ساعات أسبوعياً.\n\nتاريخ بداية الدفعة:\nلم يتم تحديده بعد، ويتم إبلاغ الطلاب عند اعتماده.\n\nسعة الدفعة:\n25 طالباً.\n\n════════════════════════════\nالحضور والتسجيلات\n════════════════════════════\n\n- جميع المحاضرات مباشرة عبر Zoom.\n- روابط الحضور ترسل للطلاب عبر واتساب والبريد الإلكتروني.\n- جميع المحاضرات مسجلة.\n- التسجيل يرفع خلال 24 ساعة من انتهاء المحاضرة.\n- يبقى الوصول إلى التسجيلات لمدة 6 أشهر.\n- إذا فات الطالب محاضرة يمكنه متابعتها من التسجيل.\n\n════════════════════════════\nالمتطلبات\n════════════════════════════\n\nلا يشترط:\n- خبرة برمجية.\n- خبرة سابقة في n8n.\n\nالمطلوب:\n- حاسوب Windows أو macOS أو Linux.\n- 8 GB RAM كافية.\n- اتصال إنترنت مستقر.\n- Chrome أو Edge.\n- بريد إلكتروني.\n- WhatsApp.\n- Zoom.\n\nلا يمكن تنفيذ التطبيقات العملية بشكل كامل من الهاتف فقط.\n\nلا يلزم أي اشتراك مدفوع مسبقاً.\nنستخدم قدر الإمكان الأدوات المجانية أو منخفضة التكلفة.\n\nتكلفة أرصدة API الاختيارية خلال التدريب تقريباً:\n5–10 دولارات كحد أقصى، ويمكن غالباً استخدام بدائل مجانية.\n\n════════════════════════════\nمنهاج الكورس\n════════════════════════════\n\nالأسبوع 1 — أساسيات الأتمتة وn8n\n\nالمحاضرة 1:\nمقدمة في الأتمتة والذكاء الاصطناعي\n- ما هي Automation؟\n- Workflows\n- Nodes\n- Triggers\n- Actions\n- التعرف على واجهة n8n\n- بناء أول Workflow\n\nالمحاضرة 2:\nربط التطبيقات واستقبال البيانات\n- Telegram\n- Google Sheets\n- Credentials\n- استقبال البيانات\n- تخزين البيانات تلقائياً\n\nمشروع الأسبوع:\nبوت Telegram يستقبل بيانات المستخدم ويحفظها في Google Sheets.\n\n---\n\nالأسبوع 2 — بناء Workflows عملية\n\nالمحاضرة 3:\nالشروط ومعالجة البيانات\n- Google Forms\n- Google Sheets\n- Gmail\n- If\n- Switch\n- Filters\n- معالجة الأخطاء الأساسية\n\nالمحاضرة 4:\nالإشعارات والمتابعة التلقائية\n- Emails آلية\n- Notifications\n- متابعة المستخدمين\n- تخصيص الرسائل\n\nمشروع الأسبوع:\nLead Follow-up System لمتابعة العملاء المحتملين.\n\n---\n\nالأسبوع 3 — الذكاء الاصطناعي داخل n8n\n\nالمحاضرة 5:\nAPIs والذكاء الاصطناعي\n- مفهوم API\n- HTTP Requests\n- ربط نماذج الذكاء الاصطناعي\n- Prompt Engineering\n- التلخيص\n- التصنيف\n\nالمحاضرة 6:\nAI Agents والردود الذكية\n- بناء مساعد ذكي\n- فهم نية المستخدم\n- توليد الرد\n- متى يجيب النظام؟\n- متى يحول المستخدم إلى موظف؟\n\nمشروع الأسبوع:\nمساعد خدمة عملاء ذكي.\n\n---\n\nالأسبوع 4 — Knowledge Base والمساعدون المخصصون\n\nالمحاضرة 7:\nبناء قاعدة معرفة\n- تنظيم المعلومات\n- Knowledge Base\n- التحكم في إجابات المساعد\n- تقليل Hallucination\n- تحسين دقة الردود\n\nالمحاضرة 8:\nبناء مساعد تسجيل ذكي\n- WhatsApp API\n- Telegram\n- التحقق من المستخدم\n- التعامل مع استفسارات التسجيل\n- الرد على الاعتراضات\n- التصعيد لموظف بشري\n\nمشروع الأسبوع:\nمساعد تسجيل ذكي عبر WhatsApp أو Telegram.\n\n---\n\nالأسبوع 5 — أتمتة المحتوى والعمليات\n\nالمحاضرة 9:\nContent Automation\n- توليد أفكار المحتوى\n- Google Sheets\n- Notion\n- تجهيز وجدولة المحتوى\n\nالمحاضرة 10:\nالتقارير الذكية\n- قراءة البيانات\n- تلخيص السجلات\n- إنشاء تقارير\n- إرسال ملخصات تلقائية\n\nمشروع الأسبوع:\nنظام إدارة محتوى وتقارير آلي.\n\n---\n\nالأسبوع 6 — المشروع النهائي وسوق العمل\n\nالمحاضرة 11:\nبناء نظام Automation متكامل\n- تحليل المشكلة\n- تصميم Workflow\n- معالجة الأخطاء\n- الحالات الاستثنائية\n- تحسين تجربة المستخدم\n\nالمحاضرة 12:\nمشروع التخرج ودخول سوق العمل\n- مراجعة المشاريع\n- تقديم خدمات Automation\n- التعامل مع العملاء\n- بناء Portfolio\n- تطوير المهارات بعد الكورس\n\nمشروع التخرج:\nيبني الطالب نظام Automation متكاملاً يختاره، مثل:\n- مساعد خدمة عملاء.\n- Lead Management System.\n- مساعد تسجيل.\n- نظام تقارير.\n- نظام إدارة محتوى.\n\n════════════════════════════\nما يحصل عليه الطالب\n════════════════════════════\n\n- 12 محاضرة مباشرة.\n- التسجيلات لمدة 6 أشهر.\n- Workflows جاهزة.\n- Templates للاستيراد في n8n.\n- مشاريع عملية.\n- تصحيح ومتابعة التطبيقات.\n- مجموعة خاصة للطلاب.\n- جلسة Q&A أسبوعية.\n- مشروع تخرج.\n- دعم لمدة شهر بعد نهاية الكورس.\n- شهادة إتمام عند استيفاء الشروط.\n\n════════════════════════════\nالشهادة\n════════════════════════════\n\nالشهادة رقمية وليست شهادة جامعية أو اعتماداً أكاديمياً رسمياً.\n\nشروط الحصول عليها:\n- حضور 70% من المحاضرات أو مشاهدة تسجيلاتها.\n- تنفيذ التطبيقات الأساسية.\n- تسليم مشروع التخرج ومناقشته.\n\nيمكن استخدامها لتوثيق التدريب وإضافتها إلى LinkedIn والسيرة الذاتية.\n\n════════════════════════════\nالسعر والدفع\n════════════════════════════\n\nالسعر الرسمي:\n149 دولار.\n\nالسعر المبكر:\n119 دولار خلال فترة العرض المبكر.\n\nالتقسيط:\nدفعتان:\n75 دولار عند تثبيت التسجيل.\n74 دولار قبل بداية الأسبوع الثالث.\n\nوسائل الدفع الممكنة:\n- USDT TRC20.\n- تحويل بنكي حسب البلد.\n- PayPal حسب البلد.\n- وسائل دفع محلية حسب توفرها.\n\nأي تفاصيل مالية غير موجودة هنا يجب تحويلها لفريق التسجيل.\n\nلا تطلب بيانات بنكية أو صور تحويل من الطالب.\n\nلا تخترع خصومات أو أسعاراً خاصة.\n\n════════════════════════════\nالدعم\n════════════════════════════\n\nالطالب يستطيع طرح الأسئلة:\n- أثناء المحاضرات عبر Zoom.\n- بين المحاضرات داخل مجموعة الطلاب.\n- في جلسة Q&A الأسبوعية.\n- عبر المساعد فيما يتعلق بالكورس.\n\nالدعم يستمر لمدة شهر بعد انتهاء التدريب.\n\nإذا أرسل الطالب مشكلة تقنية تخص n8n أو محتوى الكورس:\n1. افهم المشكلة.\n2. ابدأ بأبسط حل.\n3. أعطه خطوات قصيرة.\n4. لا تفترض أن خطوة نجحت قبل أن يخبرك.\n5. اطلب Screenshot أو رسالة الخطأ إذا احتجتها.\n\n════════════════════════════\nقواعد الدقة\n════════════════════════════\n\nلا تخترع:\n- موعداً.\n- سعراً.\n- خصماً.\n- رابطاً.\n- شهادة أو اعتماداً.\n- ميزة غير موجودة.\n- وعداً بوظيفة أو دخل.\n\nإذا لم تكن المعلومة موجودة قل:\n\"لا تتوفر لدي هذه المعلومة، سأنقل سؤالك للمشرف ويصلك الرد قريباً.\"\n\nهدفك النهائي:\nساعد الطالب على فهم قيمة الكورس واتخاذ قرار التسجيل عندما يكون متردداً، وبعد تسجيله كن مساعده الذكي طوال رحلته التدريبية."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        576,
+        256
+      ],
+      "id": "df0efc7e-ec5b-4a41-9d84-b81dc35b8993",
+      "name": "المساعد الذكي"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 11
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -688,
+        768
+      ],
+      "id": "3ae37559-0b8d-4c9b-9261-7184118bf26b",
+      "name": "فحص يومي"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "AI_Course_Manager_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 389050415,
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=YOUR_CHAT_ID"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -464,
+        768
+      ],
+      "id": "f0f1d841-737a-443b-89c7-74e2f25284a8",
+      "name": "جلب الطلاب",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cae76dd9-937f-48b7-ae16-6146e729d27a",
+              "leftValue": "={{ $json['حالة الدفع'] }}",
+              "rightValue": "لم يدفع",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "1b364c5f-9e48-4ee1-a772-7d9418fd4b0c",
+              "leftValue": "={{ Number($json[\"عدد مرات التذكير\"]) || 0 }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "4073de4c-10e8-482f-b65a-c622718c4fc8",
+              "leftValue": "={{ !$json['آخر تذكير']|| (Date.now() - new Date($json['آخر تذكير']).getTime()) > 172800000 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        768
+      ],
+      "id": "a6ae0333-cc48-4c17-af45-1f46a2fa3183",
+      "name": "فلترة غير الدافعين"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED/message/sendText/WhatsApp-N8N",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_API_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=number",
+              "value": "={{ String($json['رقم الواتساب']) }}"
+            },
+            {
+              "name": "text",
+              "value": "=مرحباً {{ $json['الاسم'] }}👋\nلاحظنا أنك لم تستكمل إجراءات التسجيل المالي للكورس.\nهل تواجه أي صعوبة في طرق الدفع؟ نحن هنا للمساعدة."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        208,
+        768
+      ],
+      "id": "027f254b-6a18-4397-95b4-e46d306904cb",
+      "name": "إرسال المتابعة",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "AI_Course_Manager_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 389050415,
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=YOUR_CHAT_ID"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "الاسم": "={{ $('فلترة غير الدافعين').item.json['الاسم'] }}",
+            "عدد مرات التذكير": "={{ Number($('فلترة غير الدافعين').item.json[\"عدد مرات التذكير\"] || 0) + 1 }}",
+            "آخر تذكير": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
+          },
+          "matchingColumns": [
+            "الاسم"
+          ],
+          "schema": [
+            {
+              "id": "طابع زمني",
+              "displayName": "طابع زمني",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "الاسم",
+              "displayName": "الاسم",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "رقم الواتساب",
+              "displayName": "رقم الواتساب",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "البريد الإلكتروني ",
+              "displayName": "البريد الإلكتروني ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "هل لديك خبرة سابقة في البرمجة أو الذكاء الاصطناعي؟",
+              "displayName": "هل لديك خبرة سابقة في البرمجة أو الذكاء الاصطناعي؟",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ما هدفك من حضور هذه الدورة ؟",
+              "displayName": "ما هدفك من حضور هذه الدورة ؟",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "هل تملك حاسوباً بمواصفات جيدة ؟",
+              "displayName": "هل تملك حاسوباً بمواصفات جيدة ؟",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "حالة الدفع",
+              "displayName": "حالة الدفع",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "آخر تذكير",
+              "displayName": "آخر تذكير",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "عدد مرات التذكير",
+              "displayName": "عدد مرات التذكير",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        768
+      ],
+      "id": "2a76ae3a-085f-4db2-973e-786468a82619",
+      "name": "تسجيل التذكير"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -688,
+        992
+      ],
+      "id": "4d3852d3-5e14-4065-aa2f-c7b92010f291",
+      "name": "فحص كل ساعة"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "AI_Course_Manager_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1499555873,
+          "mode": "list",
+          "cachedResultName": "Lectures",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=YOUR_CHAT_ID"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -464,
+        992
+      ],
+      "id": "afa8a6b7-51f0-47c9-ad34-2d782734ce7d",
+      "name": "جلب المحاضرات",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5bb7e180-7e5f-41ef-8c6e-6703b6f7c467",
+              "leftValue": "={{ $json.reminder_sent }}",
+              "rightValue": "FALSE",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "cdc2e410-961e-4948-972c-89414cb7d103",
+              "leftValue": "={{ (DateTime.fromFormat($json.lecture_datetime, 'yyyy-MM-dd HH:mm').toMillis() - $now.toMillis()) > 0 \n   && (DateTime.fromFormat($json.lecture_datetime, 'yyyy-MM-dd HH:mm').toMillis() - $now.toMillis()) < 14400000 }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "d773cff1-f5c4-4415-9762-01ab6188555f",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        992
+      ],
+      "id": "051cf075-b9cd-46ca-ae5e-2bcfb7f4480c",
+      "name": "محاضرة بعد 3 ساعات؟"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "AI_Course_Manager_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 389050415,
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=YOUR_CHAT_ID"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -16,
+        992
+      ],
+      "id": "94b805be-2fe9-4382-b348-b47713143929",
+      "name": "جلب الطلاب1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED/message/sendText/WhatsApp-N8N",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_API_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=number",
+              "value": "={{ String($json['رقم الواتساب']) }}"
+            },
+            {
+              "name": "text",
+              "value": "=جاهز يا {{ $json[\"الاسم\"] }}؟ ⏰\nمحاضرة \"*{{ $('محاضرة بعد 3 ساعات؟').item.json.lecture_title }}*\" ستبدأ بعد قليل.\nتأكد من استقرار الإنترنت لديك."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        432,
+        992
+      ],
+      "id": "b7126cd4-7eae-4d59-9dab-ccdbf41c621e",
+      "name": "إرسال التذكير",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "AI_Course_Manager_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1499555873,
+          "mode": "list",
+          "cachedResultName": "Lectures",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=YOUR_CHAT_ID"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lecture_id": "={{ $('محاضرة بعد 3 ساعات؟').item.json.lecture_id }}",
+            "reminder_sent": "TRUE"
+          },
+          "matchingColumns": [
+            "lecture_id"
+          ],
+          "schema": [
+            {
+              "id": "lecture_id",
+              "displayName": "lecture_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "lecture_title",
+              "displayName": "lecture_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "lecture_datetime",
+              "displayName": "lecture_datetime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        992
+      ],
+      "id": "e86a6db6-7dc0-4902-9646-3ec1fddb2033",
+      "name": "تعليم كمُرسل"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -16,
+        768
+      ],
+      "id": "595b97d7-bc78-49a3-b800-59ece627d81e",
+      "name": "Wait"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        992
+      ],
+      "id": "4c743b82-302e-4ed0-ace7-eff0fe78b264",
+      "name": "Wait1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        656,
+        992
+      ],
+      "id": "9c27b513-de14-4ecd-944f-fe43268b6292",
+      "name": "Limit"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "المساعد الذكي",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "رد: غير مسجّل",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "المساعد الذكي",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "المساعد الذكي",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "تسجيل جديد": {
+      "main": [
+        [
+          {
+            "node": "رسالة الترحيب",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "رسالة الترحيب": {
+      "main": [
+        [
+          {
+            "node": "تهيئة حالة الدفع",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "استقبال رسالة واتساب": {
+      "main": [
+        [
+          {
+            "node": "استخراج وتنظيف البيانات",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "استخراج وتنظيف البيانات": {
+      "main": [
+        [
+          {
+            "node": "تحقق من أن الرسالة من طالب",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "تحقق من أن الرسالة من طالب": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "المساعد الذكي": {
+      "main": [
+        [
+          {
+            "node": "إرسال رد المساعد",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "فحص يومي": {
+      "main": [
+        [
+          {
+            "node": "جلب الطلاب",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "جلب الطلاب": {
+      "main": [
+        [
+          {
+            "node": "فلترة غير الدافعين",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "فلترة غير الدافعين": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "إرسال المتابعة": {
+      "main": [
+        [
+          {
+            "node": "تسجيل التذكير",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "فحص كل ساعة": {
+      "main": [
+        [
+          {
+            "node": "جلب المحاضرات",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "جلب المحاضرات": {
+      "main": [
+        [
+          {
+            "node": "محاضرة بعد 3 ساعات؟",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "محاضرة بعد 3 ساعات؟": {
+      "main": [
+        [
+          {
+            "node": "جلب الطلاب1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "جلب الطلاب1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "إرسال التذكير": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "إرسال المتابعة",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "إرسال التذكير",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "تعليم كمُرسل",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
