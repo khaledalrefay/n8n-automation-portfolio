@@ -45,8 +45,7 @@ maps to and executes it.
 computes the closing figures in a Code node, and sends the report.
 
 ### Architecture
-![Workflow canvas](./screenshots/canvas.jpeg)
-![Live conversation in Telegram](./screenshots/conversation.jpeg)
+![Workflow canvas](./screenshots/AbuAhmadSmartLedger.png)
 
 ```mermaid
 flowchart TD
