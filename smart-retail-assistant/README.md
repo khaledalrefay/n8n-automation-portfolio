@@ -47,46 +47,6 @@ computes the closing figures in a Code node, and sends the report.
 ### Architecture
 ![Workflow canvas](./screenshots/AbuAhmadSmartLedger.png)
 
-```mermaid
-flowchart TD
-    TG([Telegram Trigger]):::trig --> RT{{Route Update Type}}:::route
-
-    RT -->|start| W[Send Welcome]:::send
-    RT -->|dashboard| DM[Send Dashboard Menu]:::send
-    RT -->|voice| GV[Get Voice File]:::io
-    RT -->|text| NI
-    RT -->|callback| DS1[Get Sales for Dashboard]:::db
-    RT -->|unmatched| FB[Send Fallback Reply]:::send
-
-    GV --> TR[Transcribe Voice<br/><i>speech to text</i>]:::io
-    TR --> NI[Normalize Input]:::proc
-
-    NI --> PROC[Send Processing]:::send
-    NI --> AG
-
-    subgraph AI[AI Agent]
-        direction TB
-        AG((Agent)):::agent
-        LLM[OpenRouter Chat Model]:::model --- AG
-        MEM[(Simple Memory)]:::model --- AG
-        AG --- TOOLS["10 Google Sheets tools<br/>lookup_products · find_customer<br/>add_sale · add_customer · add_payment<br/>read_sales · read_payments<br/>update_sale · update_customer<br/>delete_customer"]:::db
-    end
-
-    AG --> REPLY[Send Agent Reply]:::send
-
-    DS1 --> DS2[Get Payments for Dashboard]:::db --> DSC[Code: Dashboard]:::proc --> DSR[Send Dashboard Result]:::send
-
-    CRON([Daily at 23:00]):::trig --> GS[Get Sales]:::db --> GP[Get Payments]:::db --> CDR[Code: Daily Report]:::proc --> SDR[Send Daily Report]:::send
-
-    classDef trig fill:#fef3c7,stroke:#d97706,color:#000
-    classDef route fill:#e0e7ff,stroke:#4f46e5,color:#000
-    classDef send fill:#dbeafe,stroke:#2563eb,color:#000
-    classDef db fill:#dcfce7,stroke:#16a34a,color:#000
-    classDef proc fill:#fae8ff,stroke:#a21caf,color:#000
-    classDef agent fill:#ffe4e6,stroke:#e11d48,color:#000
-    classDef model fill:#f1f5f9,stroke:#64748b,color:#000
-    classDef io fill:#ffedd5,stroke:#ea580c,color:#000
-```
 
 ## Design decisions
 
