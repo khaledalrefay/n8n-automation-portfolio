@@ -1,0 +1,7 @@
+# never commit raw exports — sanitize with scrub_n8n.py first
+*.raw.json
+*-original.json
+.env
+.env.*
+credentials.json
+.DS_Store
