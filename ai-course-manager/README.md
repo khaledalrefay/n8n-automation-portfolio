@@ -60,64 +60,7 @@ fetches learners, sends, then marks the lecture as sent so the next hourly run
 skips it.
 
 ### Architecture
-
-```mermaid
-flowchart TD
-    subgraph W1["1 · Enrollment onboarding"]
-        direction LR
-        T1([Sheets Trigger<br/><i>rowAdded</i>]):::trig --> WEL[Welcome message]:::send --> INIT[Init payment status]:::db
-    end
-
-    subgraph W2["2 · Conversational support"]
-        direction TB
-        HOOK([Webhook<br/><i>POST /whatsapp</i>]):::trig --> EX[Extract &amp; clean payload]:::proc
-        EX --> GATE{is a real<br/>learner message?}:::gate
-        GATE -->|"phone ✓ · not fromMe · private chat"| LOOK[Look up learner]:::db
-        GATE -->|no| DROP[ discard ]:::drop
-        LOOK --> REG{registered?}:::gate
-        REG -->|no| NOTREG[Reply: not registered]:::send
-        REG -->|yes| AG((AI Assistant)):::agent
-        LLM[OpenRouter Chat Model]:::model --- AG
-        MEM[(Simple Memory)]:::model --- AG
-        AG --> SEND[Send reply]:::send
-    end
-
-    subgraph W3["3 · Payment follow-up"]
-        direction LR
-        T3([Daily schedule]):::trig --> ST[Read learners]:::db --> F3{{"unpaid<br/>· reminders &lt; 3<br/>· last &gt; 48h ago"}}:::gate
-        F3 --> WA[Wait]:::wait --> FU[Send follow-up]:::send --> LOG[Write count + timestamp]:::db
-    end
-
-    subgraph W4["4 · Lecture reminders"]
-        direction LR
-        T4([Hourly schedule]):::trig --> LEC[Read lectures]:::db --> F4{{"starts in &lt; 3h<br/>· not yet sent"}}:::gate
-        F4 --> ST2[Read learners]:::db --> WA2[Wait]:::wait --> REM[Send reminder]:::send --> LIM[Limit]:::proc --> MARK[Mark reminder_sent]:::db
-    end
-
-    DB[("Google Sheets<br/>Students · Lectures")]:::db
-    INIT -.-> DB
-    LOOK -.-> DB
-    LOG -.-> DB
-    MARK -.-> DB
-    EVO["Evolution API<br/><i>self-hosted · Docker</i>"]:::infra
-    WEL -.-> EVO
-    SEND -.-> EVO
-    FU -.-> EVO
-    REM -.-> EVO
-    EVO -.-> HOOK
-
-    classDef trig fill:#fef3c7,stroke:#d97706,color:#000
-    classDef send fill:#dbeafe,stroke:#2563eb,color:#000
-    classDef db fill:#dcfce7,stroke:#16a34a,color:#000
-    classDef proc fill:#fae8ff,stroke:#a21caf,color:#000
-    classDef agent fill:#ffe4e6,stroke:#e11d48,color:#000
-    classDef model fill:#f1f5f9,stroke:#64748b,color:#000
-    classDef gate fill:#e0e7ff,stroke:#4f46e5,color:#000
-    classDef wait fill:#ffedd5,stroke:#ea580c,color:#000
-    classDef infra fill:#ecfeff,stroke:#0891b2,color:#000
-    classDef drop fill:#f1f5f9,stroke:#94a3b8,color:#64748b
-```
-
+![Workflow canvas in n8n](./screenshots/CourseAssistant.png)
 ## Design decisions
 
 **Self-hosted Evolution API instead of a paid gateway.** Running the WhatsApp
